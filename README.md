@@ -170,6 +170,16 @@ Run tests locally to prevent regressions:
 - **Backend tests**: `cd backend && pytest`
 - **Frontend tests**: `cd frontend && npm run test`
 
+### Performance Budgeting
+To prevent JavaScript bundle bloat, the CI pipeline enforces a strict performance budget. **Pull Requests will fail if the frontend JavaScript bundle size increases by more than 50 KB** compared to the base branch.
+
+You can manually check your bundle size locally before committing:
+```bash
+cd frontend
+npm run build
+# Check the generated bundle sizes in the terminal output or the dist/assets folder
+```
+
 ---
 
 ## 🧑‍💻 Contributing & Community Guides
