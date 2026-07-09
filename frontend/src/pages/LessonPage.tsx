@@ -34,9 +34,21 @@ import { GitGraph } from "../components/ui/GitGraph";
 import { NotePanel } from "../components/ui/NotePanel";
 import { LessonFeedbackWidget } from "../components/ui/LessonFeedbackWidget";
 import { PythonSandbox } from "../components/ui/PythonSandbox";
-import { CollabPythonSandbox } from "../components/ui/CollabPythonSandbox";
+const CollabPythonSandbox = dynamic(
+  () =>
+    import("../components/ui/CollabPythonSandbox").then(
+      (mod) => mod.CollabPythonSandbox,
+    ),
+  { ssr: false },
+);
 import { JSSandbox } from "../components/ui/JSSandbox";
-import { InteractiveDebugger } from "../components/ui/InteractiveDebugger";
+const InteractiveDebugger = dynamic(
+  () =>
+    import("../components/ui/InteractiveDebugger").then(
+      (mod) => mod.InteractiveDebugger,
+    ),
+  { ssr: false },
+);
 import { TextToSpeechControls } from "../components/ui/TextToSpeechControls";
 import { ReadingProgressTracker } from "../components/ui/ReadingProgressTracker";
 import { lessonPluginRegistry } from "../plugins/LessonPluginRegistry";
