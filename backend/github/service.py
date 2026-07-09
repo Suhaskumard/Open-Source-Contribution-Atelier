@@ -27,6 +27,11 @@ class GithubService:
 
     def make_request(self, method: str, endpoint: str, **kwargs) -> Dict[str, Any]:
         """Make a GitHub API request"""
+        # Ensure endpoint is a relative path to prevent SSRF via URL injection
+        parsed_endpoint = urlparse(endpoint)
+        if parsed_endpoint.scheme or parsed_endpoint.netloc:
+            raise ValueError("Invalid endpoint: Must be a relative path")
+
         url = f"{self.base_url}/{endpoint.lstrip('/')}"
         
         parsed_url = urlparse(url)
