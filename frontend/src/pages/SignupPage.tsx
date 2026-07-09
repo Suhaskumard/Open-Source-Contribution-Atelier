@@ -208,3 +208,5 @@ export function SignupPage() {
     </AuthPageShell>
   );
 }
+
+export default SignupPage;

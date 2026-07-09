@@ -40,7 +40,11 @@ export function PeerReviewPage() {
   // Report Dialog State
   const [reportDialogOpen, setReportDialogOpen] = useState(false);
 
-  const { data: pendingSubmissions = [], refetch: fetchPendingSubmissions, isLoading: isLoadingSubmissions } = useQuery<CodeSubmission[]>({
+  const {
+    data: pendingSubmissions = [],
+    refetch: fetchPendingSubmissions,
+    isLoading: isLoadingSubmissions,
+  } = useQuery<CodeSubmission[]>({
     queryKey: ["pendingSubmissions"],
     queryFn: async () => {
       const response = await fetchApi("/progress/code-submissions/");
@@ -181,7 +185,9 @@ export function PeerReviewPage() {
                 />
               </div>
               <div>
-                <label className="block font-bold mb-2">Original Code Snippet (Optional)</label>
+                <label className="block font-bold mb-2">
+                  Original Code Snippet (Optional)
+                </label>
                 <textarea
                   rows={6}
                   value={originalCodeSnippet}
@@ -191,7 +197,9 @@ export function PeerReviewPage() {
                 />
               </div>
               <div>
-                <label className="block font-bold mb-2">Updated Code Snippet</label>
+                <label className="block font-bold mb-2">
+                  Updated Code Snippet
+                </label>
                 <textarea
                   required
                   rows={8}
@@ -382,3 +390,5 @@ export function PeerReviewPage() {
     </div>
   );
 }
+
+export default PeerReviewPage;

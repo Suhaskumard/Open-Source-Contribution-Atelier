@@ -1,4 +1,11 @@
-import { useState, useMemo, useRef, useCallback, useEffect, useDeferredValue } from "react";
+import {
+  useState,
+  useMemo,
+  useRef,
+  useCallback,
+  useEffect,
+  useDeferredValue,
+} from "react";
 import { SectionCard } from "../components/ui/SectionCard";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchApi } from "../lib/api";
@@ -57,7 +64,13 @@ export function LeaderboardPage() {
                 xp: 720,
                 is_ssoc: false,
               },
-              { username: "octocat", prs_merged: 6, issues_solved: 2, xp: 420, is_ssoc: true },
+              {
+                username: "octocat",
+                prs_merged: 6,
+                issues_solved: 2,
+                xp: 420,
+                is_ssoc: true,
+              },
             ],
             next: null,
           };
@@ -101,7 +114,7 @@ export function LeaderboardPage() {
         prs: item.prs_merged,
         issues: item.issues_solved,
         xp: item.xp,
-        is_ssoc: item.is_ssoc !== undefined ? item.is_ssoc : (idx % 2 === 0),
+        is_ssoc: item.is_ssoc !== undefined ? item.is_ssoc : idx % 2 === 0,
       }),
     );
   }, [leaderboardData]);
@@ -110,7 +123,9 @@ export function LeaderboardPage() {
 
   const filteredLeaderboard = useMemo(() => {
     return [...leaderboard].filter((item) => {
-      const matchesSearch = item.username.toLowerCase().includes(deferredSearch.toLowerCase());
+      const matchesSearch = item.username
+        .toLowerCase()
+        .includes(deferredSearch.toLowerCase());
       const matchesSsoc = !showSsocOnly || item.is_ssoc;
       return matchesSearch && matchesSsoc;
     });
@@ -162,8 +177,14 @@ export function LeaderboardPage() {
     };
   }, [queryClient]);
 
-  const top3 = useMemo(() => filteredLeaderboard.slice(0, 3), [filteredLeaderboard]);
-  const restOfLeaderboard = useMemo(() => filteredLeaderboard.slice(3), [filteredLeaderboard]);
+  const top3 = useMemo(
+    () => filteredLeaderboard.slice(0, 3),
+    [filteredLeaderboard],
+  );
+  const restOfLeaderboard = useMemo(
+    () => filteredLeaderboard.slice(3),
+    [filteredLeaderboard],
+  );
 
   const timeframes: { id: Timeframe; label: string }[] = [
     { id: "all", label: "All Time" },
@@ -249,7 +270,9 @@ export function LeaderboardPage() {
                     {top3[1].username}
                   </p>
                   {top3[1].is_ssoc && (
-                    <span className="text-[10px] bg-[#ffc658]/20 text-[#d4af37] px-1.5 py-0.5 rounded font-black border border-[#d4af37]/30">SSoC</span>
+                    <span className="text-[10px] bg-[#ffc658]/20 text-[#d4af37] px-1.5 py-0.5 rounded font-black border border-[#d4af37]/30">
+                      SSoC
+                    </span>
                   )}
                 </div>
                 <p className="text-accent font-bold text-xl mt-2">
@@ -286,7 +309,9 @@ export function LeaderboardPage() {
                     {top3[0].username}
                   </p>
                   {top3[0].is_ssoc && (
-                    <span className="text-[11px] bg-[#ffc658]/20 text-[#d4af37] px-2 py-0.5 rounded font-black border border-[#d4af37]/30">SSoC</span>
+                    <span className="text-[11px] bg-[#ffc658]/20 text-[#d4af37] px-2 py-0.5 rounded font-black border border-[#d4af37]/30">
+                      SSoC
+                    </span>
                   )}
                 </div>
                 <p className="text-accent font-black text-2xl mt-2">
@@ -323,7 +348,9 @@ export function LeaderboardPage() {
                     {top3[2].username}
                   </p>
                   {top3[2].is_ssoc && (
-                    <span className="text-[9px] bg-[#ffc658]/20 text-[#d4af37] px-1 py-0.5 rounded font-black border border-[#d4af37]/30">SSoC</span>
+                    <span className="text-[9px] bg-[#ffc658]/20 text-[#d4af37] px-1 py-0.5 rounded font-black border border-[#d4af37]/30">
+                      SSoC
+                    </span>
                   )}
                 </div>
                 <p className="text-accent font-bold text-lg mt-1">
@@ -430,3 +457,5 @@ export function LeaderboardPage() {
     </div>
   );
 }
+
+export default LeaderboardPage;
