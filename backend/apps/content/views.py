@@ -25,6 +25,7 @@ from apps.search.models import SearchDocument
 
 from . import semantic_search
 from .models import Lesson, Organization
+from .permissions import IsLessonUnlocked
 from .serializers import (
     LessonSearchSerializer,
     LessonSerializer,
@@ -290,7 +291,7 @@ class LessonPDFView(views.APIView):
 
         return response_obj
 
-class LessonAccessCheckView(APIView):
+class LessonAccessCheckView(views.APIView):
     """
     Check if user can access a lesson.
     """
