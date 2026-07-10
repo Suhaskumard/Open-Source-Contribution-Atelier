@@ -17,6 +17,7 @@ export function GitHubAuthCallbackPage() {
     }
 
     login({ access, refresh });
+    sessionStorage.setItem("justLoggedIn", "true");
     window.location.replace("/dashboard");
   }, [login, navigate, searchParams]);
 

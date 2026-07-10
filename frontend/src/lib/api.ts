@@ -573,3 +573,15 @@ export async function exportWorkspaceZip(projectId: string): Promise<void> {
   window.URL.revokeObjectURL(url);
   document.body.removeChild(a);
 }
+
+export function getMediaUrl(path: string | null | undefined): string | null {
+  if (!path) return null;
+  if (path.startsWith("http://") || path.startsWith("https://")) {
+    return path;
+  }
+  const API_BASE = import.meta.env.VITE_API_BASE_URL?.trim() || `${window.location.origin}/api`;
+  const BACKEND_BASE = API_BASE.endsWith("/api")
+    ? API_BASE.substring(0, API_BASE.length - 4)
+    : API_BASE;
+  return `${BACKEND_BASE}${path.startsWith("/") ? "" : "/"}${path}`;
+}

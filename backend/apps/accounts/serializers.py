@@ -60,6 +60,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
     twitter_url = serializers.URLField(required=False, allow_blank=True)
     linkedin_url = serializers.URLField(required=False, allow_blank=True)
     github_url = serializers.URLField(required=False, allow_blank=True)
+    bio = serializers.CharField(required=False, allow_blank=True)
     receive_weekly_digest = serializers.BooleanField(required=False)
 
     class Meta:
@@ -73,6 +74,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
             "twitter_url",
             "linkedin_url",
             "github_url",
+            "bio",
             "receive_weekly_digest",
         )
         extra_kwargs = {
@@ -97,6 +99,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         twitter_url = validated_data.pop("twitter_url", None)
         linkedin_url = validated_data.pop("linkedin_url", None)
         github_url = validated_data.pop("github_url", None)
+        bio = validated_data.pop("bio", None)
         receive_weekly_digest = validated_data.pop("receive_weekly_digest", None)
 
         for attr, value in validated_data.items():
@@ -115,6 +118,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
             or twitter_url is not None
             or linkedin_url is not None
             or github_url is not None
+            or bio is not None
             or receive_weekly_digest is not None
         ):
             if hasattr(instance, "user_profile"):
@@ -134,6 +138,8 @@ class UserUpdateSerializer(serializers.ModelSerializer):
                 profile.linkedin_url = linkedin_url
             if github_url is not None:
                 profile.github_url = github_url
+            if bio is not None:
+                profile.bio = bio
             if receive_weekly_digest is not None:
                 profile.receive_weekly_digest = receive_weekly_digest
             profile.save()
@@ -149,6 +155,7 @@ class UserListSerializer(serializers.ModelSerializer):
     twitter_url = serializers.SerializerMethodField()
     linkedin_url = serializers.SerializerMethodField()
     github_url = serializers.SerializerMethodField()
+    bio = serializers.SerializerMethodField()
     receive_weekly_digest = serializers.SerializerMethodField()
 
     class Meta:
@@ -164,6 +171,7 @@ class UserListSerializer(serializers.ModelSerializer):
             "twitter_url",
             "linkedin_url",
             "github_url",
+            "bio",
             "receive_weekly_digest",
         )
 
@@ -203,6 +211,11 @@ class UserListSerializer(serializers.ModelSerializer):
             return obj.user_profile.github_url
         return ""
 
+    def get_bio(self, obj):
+        if hasattr(obj, "user_profile"):
+            return obj.user_profile.bio
+        return ""
+
     def get_receive_weekly_digest(self, obj):
         if hasattr(obj, "user_profile"):
             return obj.user_profile.receive_weekly_digest
@@ -223,7 +236,10 @@ class EmailOrUsernameTokenObtainPairSerializer(TokenObtainPairSerializer):
 
         result = super().validate(attrs)
 
-        if hasattr(self.user, "user_profile") and self.user.user_profile.last_password_change:
+        if (
+            hasattr(self.user, "user_profile")
+            and self.user.user_profile.last_password_change
+        ):
             if timezone.now() > self.user.user_profile.last_password_change + timedelta(
                 days=90
             ):
@@ -255,39 +271,40 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
     def validate_new_password(self, value):
         return validate_strong_password(value)
 
+
 class AvatarUploadSerializer(serializers.Serializer):
     avatar = serializers.ImageField(
-        max_length=255,
-        allow_empty_file=False,
-        use_url=True
+        max_length=255, allow_empty_file=False, use_url=True
     )
 
     def validate_avatar(self, value):
         # Check file size (max 5MB)
         if value.size > 5 * 1024 * 1024:
             raise serializers.ValidationError("Image size must be under 5MB")
-        
+
         # Check file extension
-        allowed_extensions = ['jpg', 'jpeg', 'png', 'gif', 'webp']
-        ext = value.name.split('.')[-1].lower()
+        allowed_extensions = ["jpg", "jpeg", "png", "gif", "webp"]
+        ext = value.name.split(".")[-1].lower()
         if ext not in allowed_extensions:
             raise serializers.ValidationError(
                 f"File type not supported. Use: {', '.join(allowed_extensions)}"
             )
-        
+
         return value
+
 
 class UserProfileSerializer(serializers.ModelSerializer):
     avatar_url = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = UserProfile
-        fields = ['avatar', 'avatar_url']
-    
+        fields = ["avatar", "avatar_url"]
+
     def get_avatar_url(self, obj):
         if obj.avatar:
             return obj.avatar.url
         return None
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # OTP (Email Verification) serializers

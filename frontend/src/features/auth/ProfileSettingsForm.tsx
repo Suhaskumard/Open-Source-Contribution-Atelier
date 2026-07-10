@@ -6,7 +6,6 @@ import { fetchApi } from "../../lib/api";
 import { useAuth } from "./AuthContext";
 import { useToast } from "../ui/ToastContext";
 import { AvatarUploadDropzone } from "../../components/ui/AvatarUploadDropzone";
-import { CoverUploadDropzone } from "../../components/ui/CoverUploadDropzone";
 import { useWebPush } from "../../hooks/useWebPush";
 
 const profileSchema = z.object({
@@ -67,13 +66,16 @@ const profileSchema = z.object({
 
 type ProfileFormValues = z.input<typeof profileSchema>;
 
-export function ProfileSettingsForm() {
+interface ProfileSettingsFormProps {
+  onChange?: (values: any) => void;
+}
+
+export function ProfileSettingsForm({ onChange }: ProfileSettingsFormProps) {
   const { user, checkUser } = useAuth();
   const { addToast } = useToast();
   const [loading, setLoading] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [selectedAvatar, setSelectedAvatar] = useState<File | null>(null);
-  const [selectedCover, setSelectedCover] = useState<File | null>(null);
 
   const { isSupported, isSubscribed, subscribe, unsubscribe } = useWebPush();
 
@@ -98,6 +100,15 @@ export function ProfileSettingsForm() {
     },
   });
 
+  const watchedValues = watch();
+
+  useEffect(() => {
+    onChange?.({
+      ...watchedValues,
+      avatarFile: selectedAvatar,
+    });
+  }, [watchedValues, selectedAvatar, onChange]);
+
   useEffect(() => {
     if (user?.email) {
       reset({
@@ -120,7 +131,7 @@ export function ProfileSettingsForm() {
     try {
       let body: FormData | string;
 
-      if (selectedAvatar || selectedCover) {
+      if (selectedAvatar) {
         const formData = new FormData();
         formData.append("email", data.email);
         if (data.password) formData.append("password", data.password);
@@ -133,8 +144,7 @@ export function ProfileSettingsForm() {
           "receive_weekly_digest",
           String(data.receive_weekly_digest),
         );
-        if (selectedAvatar) formData.append("avatar", selectedAvatar);
-        if (selectedCover) formData.append("cover_image", selectedCover);
+        formData.append("avatar", selectedAvatar);
         body = formData;
       } else {
         const payload: Record<string, string> = {
@@ -216,10 +226,6 @@ export function ProfileSettingsForm() {
 
   return (
     <form className="space-y-6 pt-2" onSubmit={handleSubmit(onSubmit)}>
-      <CoverUploadDropzone
-        currentCoverUrl={user?.cover_image_url}
-        onFileSelect={(file) => setSelectedCover(file)}
-      />
       <AvatarUploadDropzone
         currentAvatarUrl={user?.avatar_url}
         onFileSelect={(file) => setSelectedAvatar(file)}

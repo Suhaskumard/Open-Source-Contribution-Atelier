@@ -1,6 +1,7 @@
 import { useState, useMemo, useRef, useCallback, useEffect } from "react";
 import { SectionCard } from "../components/ui/SectionCard";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
 import { fetchApi } from "../lib/api";
 import {
   Trophy,
@@ -403,11 +404,11 @@ export function LeaderboardPage() {
                 header: "Contributor",
                 accessor: (item) => (
                   <div className="flex items-center gap-4 py-3">
-                    <div className="relative">
+                    <Link to={`/u/${item.username}`} className="relative block">
                       <img
                         src={item.avatar_url}
                         alt={item.username}
-                        className="w-12 h-12 rounded-xl border border-black/10 dark:border-white/10 shadow-sm object-cover"
+                        className="w-12 h-12 rounded-xl border border-black/10 dark:border-white/10 shadow-sm object-cover hover:scale-105 transition-transform"
                       />
                       {item.rank <= 3 && (
                         <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-white dark:bg-[#111] rounded-full flex items-center justify-center shadow-sm">
@@ -422,12 +423,10 @@ export function LeaderboardPage() {
                           )}
                         </div>
                       )}
-                    </div>
+                    </Link>
                     <div className="flex flex-col">
-                      <a
-                        href={item.html_url}
-                        target="_blank"
-                        rel="noreferrer"
+                      <Link
+                        to={`/u/${item.username}`}
                         className="font-black text-base hover:text-indigo-500 transition-colors dark:text-white truncate max-w-[150px] sm:max-w-xs"
                       >
                         {item.username}
@@ -436,7 +435,7 @@ export function LeaderboardPage() {
                             You
                           </span>
                         )}
-                      </a>
+                      </Link>
                     </div>
                   </div>
                 ),

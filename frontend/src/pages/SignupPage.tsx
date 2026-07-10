@@ -34,6 +34,7 @@ export function SignupPage() {
           body: JSON.stringify({ access_token: tokenResponse.access_token }),
         });
         login(tokens);
+        sessionStorage.setItem("justLoggedIn", "true");
         window.location.href = "/dashboard";
       } catch (err: unknown) {
         setError(getErrorMessage(err, "Google Auth Failed. Check Backend."));
@@ -63,6 +64,7 @@ export function SignupPage() {
         body: JSON.stringify({ username, password }),
       });
       login(tokens);
+      sessionStorage.setItem("justLoggedIn", "true");
       window.location.href = "/dashboard";
     } catch (err: unknown) {
       setError(getErrorMessage(err, "Failed to create account"));

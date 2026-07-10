@@ -36,6 +36,7 @@ export function LoginPage() {
         body: JSON.stringify({ username, password }),
       });
       login(tokens);
+      sessionStorage.setItem("justLoggedIn", "true");
       window.location.href = "/dashboard";
     } catch (err: unknown) {
       setError(getErrorMessage(err, "Failed to login"));

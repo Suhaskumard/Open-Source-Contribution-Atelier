@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { fetchApi } from "../lib/api";
+import { fetchApi, getMediaUrl } from "../lib/api";
 import { ActivityHeatmap } from "../components/ui/ActivityHeatmap";
 import {
   Github,
@@ -10,6 +10,8 @@ import {
   BookOpen,
   Calendar,
   MapPin,
+  Copy,
+  Check,
 } from "lucide-react";
 
 interface UserProfileData {
@@ -45,6 +47,14 @@ export function UserProfilePage() {
   const [profile, setProfile] = useState<UserProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyLink = () => {
+    const profileLink = `${window.location.origin}/u/${username}`;
+    navigator.clipboard.writeText(profileLink);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -106,33 +116,24 @@ export function UserProfilePage() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
-      {/* COVER IMAGE BANNER */}
-      <div className="relative mb-20 w-full h-56 rounded-3xl overflow-hidden shadow-card border-4 border-black dark:border-[#3a3a45]">
-        {user.cover_image_url ? (
-          <div
-            className="absolute inset-0 bg-cover bg-center"
-            style={{ backgroundImage: `url(${user.cover_image_url})` }}
-          />
-        ) : (
-          <div className="absolute inset-0 bg-gradient-to-r from-primary via-accent to-tertiary opacity-85" />
-        )}
-
-        {/* AVATAR OVERLAY */}
-        <div className="absolute -bottom-16 left-8 flex items-end">
-          <div className="h-32 w-32 rounded-2xl border-4 border-black bg-white overflow-hidden shadow-card dark:border-[#3a3a45] dark:bg-[#121218] flex items-center justify-center">
-            {user.avatar_url ? (
-              <img
-                src={user.avatar_url}
-                alt={user.username}
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <span className="text-5xl font-black uppercase text-black dark:text-white">
-                {user.username.charAt(0)}
-              </span>
-            )}
-          </div>
+      {/* HEADER WITH SHARE BUTTON */}
+      <div className="flex items-center justify-between mb-8 pb-4 border-b border-outline">
+        <div>
+          <h1 className="text-4xl font-black text-black dark:text-white uppercase tracking-tight">
+            User Profile
+          </h1>
+          <p className="mt-1 text-sm font-medium text-muted">
+            Viewing {user.username}'s public stats and badges
+          </p>
         </div>
+        <button
+          onClick={handleCopyLink}
+          className="flex items-center gap-1.5 px-4 py-2 text-sm font-black border-4 border-black rounded-xl bg-surface hover:bg-black hover:text-white transition-all dark:bg-[#1c1c24] dark:border-[#3a3a45] shadow-card-sm active:translate-y-0 hover:-translate-y-0.5"
+          title="Copy profile link"
+        >
+          {copied ? <Check size={16} className="text-green-500" /> : <Copy size={16} />}
+          <span>{copied ? "Copied Link!" : "Share Profile"}</span>
+        </button>
       </div>
 
       {/* USER INFORMATION */}
@@ -140,13 +141,32 @@ export function UserProfilePage() {
         {/* Left Column: Stats & Socials */}
         <div className="space-y-6 md:col-span-1">
           <div className="rounded-3xl border-4 border-black bg-white p-6 shadow-card dark:bg-[#121218] dark:border-[#3a3a45]">
-            <h1 className="text-3xl font-black text-black dark:text-white mb-1">
+            {/* AVATAR */}
+            <div className="flex justify-center mb-6">
+              <div className="h-32 w-32 rounded-2xl border-4 border-black bg-slate-50 overflow-hidden shadow-card dark:border-[#3a3a45] dark:bg-[#1c1c24] flex items-center justify-center">
+                {user.avatar_url ? (
+                  <img
+                    src={getMediaUrl(user.avatar_url) || ""}
+                    alt={user.username}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <span className="text-5xl font-black uppercase text-black dark:text-white">
+                    {user.username.charAt(0)}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <h2 className="text-3xl font-black text-center text-black dark:text-white mb-1">
               {user.username}
-            </h1>
+            </h2>
             {user.is_staff && (
-              <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-black bg-black text-white dark:bg-[#e2e8f0] dark:text-black mb-4">
-                STAFF
-              </span>
+              <div className="text-center mb-4">
+                <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-black bg-black text-white dark:bg-[#e2e8f0] dark:text-black">
+                  STAFF
+                </span>
+              </div>
             )}
 
             <div className="space-y-3 mt-4 text-sm font-bold text-muted-foreground">

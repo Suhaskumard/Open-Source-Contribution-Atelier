@@ -15,6 +15,7 @@ export function useHeatmap(username?: string) {
         : "/progress/heatmap/";
       const data = await fetchApi(url, {
         suppressErrorToast: true,
+        requireAuth: !username,
       });
       return data || [];
     },

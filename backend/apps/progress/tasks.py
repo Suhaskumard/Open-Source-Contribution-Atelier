@@ -21,7 +21,7 @@ def send_weekly_progress_summary():
 
     # Process active users in chunks who opted in for the digest
     users = User.objects.filter(
-        is_active=True, profile__receive_weekly_digest=True
+        is_active=True, user_profile__receive_weekly_digest=True
     ).iterator(chunk_size=100)
 
     for user in users:
@@ -39,7 +39,6 @@ def send_weekly_progress_summary():
                 "data": context,
             }
             async_task("apps.notifications.tasks.send_bulk_email", payload)
-
 
 
 def evaluate_achievements_task(user_id):
@@ -167,12 +166,14 @@ def analyze_submission_plagiarism(submission_id: int):
             # Stop after first match as tests expect a single report
             break
 
+
 def update_leaderboard_task(user_id, username, xp_delta):
     """
     Background task to update Redis leaderboard and broadcast WebSocket event.
     """
     try:
         from apps.progress.services.leaderboard_service import LeaderboardService
+
         LeaderboardService.update_user_xp(user_id, username, xp_delta)
     except Exception as exc:
         logger.error("Failed to update leaderboard in background task: %s", exc)
@@ -184,24 +185,26 @@ def process_buffered_progress_updates():
     Ensures atomic updates and maintains data consistency.
     """
     from apps.progress.services.progress_buffer import ProgressBufferService
-    from apps.progress.services.progress_batch_service import process_bulk_progress_updates
+    from apps.progress.services.progress_batch_service import (
+        process_bulk_progress_updates,
+    )
     from django.contrib.auth import get_user_model
     import time
-    
+
     User = get_user_model()
-    
+
     metrics = ProgressBufferService.get_queue_metrics()
     queue_size = metrics.get("queue_size", 0) + metrics.get("retry_queue_size", 0)
-    
+
     if queue_size == 0:
         return
-        
+
     logger.info(f"Processing up to 500 of {queue_size} buffered progress updates...")
-    
+
     updates = ProgressBufferService.get_batched_updates(batch_size=500)
     if not updates:
         return
-        
+
     # Group by user
     user_updates = {}
     for update in updates:
@@ -209,30 +212,37 @@ def process_buffered_progress_updates():
         if user_id not in user_updates:
             user_updates[user_id] = []
         user_updates[user_id].append(update)
-        
+
     success_count = 0
     successful_keys = []
     failed_updates = []
-    
+
     for user_id, user_data in user_updates.items():
         try:
             user = User.objects.get(id=user_id)
             # Send without the internal _redis_key metadata
-            clean_data = [{k: v for k, v in item.items() if not k.startswith('_')} for item in user_data]
-            
+            clean_data = [
+                {k: v for k, v in item.items() if not k.startswith("_")}
+                for item in user_data
+            ]
+
             success_ids = process_bulk_progress_updates(user, clean_data)
             success_count += len(success_ids)
-            
+
             # Record successful keys
-            successful_keys.extend([item["_redis_key"] for item in user_data if "_redis_key" in item])
+            successful_keys.extend(
+                [item["_redis_key"] for item in user_data if "_redis_key" in item]
+            )
         except Exception as e:
             logger.error(f"Failed to process bulk updates for user {user_id}: {str(e)}")
             failed_updates.extend(user_data)
-            
+
     if successful_keys:
         ProgressBufferService.mark_successful(successful_keys)
-        
+
     if failed_updates:
         ProgressBufferService.handle_failed_updates(failed_updates)
-            
-    logger.info(f"Successfully processed {success_count} progress updates. {len(failed_updates)} failed.")
+
+    logger.info(
+        f"Successfully processed {success_count} progress updates. {len(failed_updates)} failed."
+    )
